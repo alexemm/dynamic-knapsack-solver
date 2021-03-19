@@ -45,8 +45,14 @@ def get_packed_items(weights: List[int], profits: List[float], solution: List[Li
     return get_packed_items_rek(solution, weights, profits, number_items - 1, n - 1, frozenset(), set())
 
 
-# w = (2, 4, 3)
-# p = (10, 17, 14)
+def get_profit(solution: FrozenSet[int], profit: List[float]):
+    return sum(profit[item - 1] for item in solution)
+
+
+def get_weights(solution: FrozenSet[int], weights: List[int]):
+    return sum(weights[item - 1] for item in solution)
+
+
 w = [1, 4, 1, 3, 2, 5]
 p = [4, 1, 5, 2, 2, 7]
 b = 10  # data from our example
@@ -54,4 +60,6 @@ solution = solve(w, p, b)
 print("Table from Calculation")
 pprint(get_solution_matrix_with_indices(solution))
 print("Solutions:")
-print(get_packed_items(w, p, solution))
+for packed_items in get_packed_items(w, p, solution):
+    print(f"{packed_items}: profit={get_profit(packed_items, p)}, weight={get_weights(packed_items, w)}")
+
