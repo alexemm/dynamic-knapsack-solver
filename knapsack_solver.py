@@ -44,34 +44,6 @@ def get_solution_matrix_with_indices(solution: List[List[float]]) -> List[List[U
     return ret
 
 
-def get_packed_items_rek(solution: List[List[float]], weights: List[int], profits: List[float], item: int, c: int,
-                         items: FrozenSet[int], solution_set: Set[FrozenSet[int]]) -> Set[FrozenSet[int]]:
-    """
-    Recursive function for calculating the packed items
-    :param solution: The matrix of the solved knapsack instance
-    :param weights: The list of the weight of the items
-    :param profits: The list of the profit of the items
-    :param item: The index of the item
-    :param c: The current capacity of the baggage
-    :param items: The set of the currently packed items
-    :param solution_set: The set of all the solutions to the knapsack instance
-    :return: The solution set with all the item combinations used
-    """
-    if item == 0 or c == 0:
-        if solution[item][c] != 0:
-            # When we need to pack in the first item
-            items |= frozenset({item + 1})
-        return solution_set | {items}
-    if solution[item][c] - profits[item] == solution[item - 1][c - weights[item]]:
-        # When we pack the item
-        solution_set |= get_packed_items_rek(solution, weights, profits, item - 1, c - weights[item],
-                                             items | frozenset({item + 1}), solution_set)
-    if solution[item][c] == solution[item - 1][c]:
-        # When we do not pack the item, because the maximal profit would stay the same
-        solution_set |= get_packed_items_rek(solution, weights, profits, item - 1, c, items, solution_set)
-    return solution_set
-
-
 def get_packed_items(weights: List[int], profits: List[float], solution: List[List[float]]) -> Set[FrozenSet[int]]:
     """
     Returns the possible solution from a solved knapsack instance.
@@ -80,9 +52,37 @@ def get_packed_items(weights: List[int], profits: List[float], solution: List[Li
     :param solution: Solution matrix of the solved knapsack instance.
     :return: Set of item allocation of given knapsack instance
     """
+
+    def _get_packed_items_rek(solution: List[List[float]], weights: List[int], profits: List[float], item: int, c: int,
+                              items: FrozenSet[int], solution_set: Set[FrozenSet[int]]) -> Set[FrozenSet[int]]:
+        """
+        Recursive function for calculating the packed items
+        :param solution: The matrix of the solved knapsack instance
+        :param weights: The list of the weight of the items
+        :param profits: The list of the profit of the items
+        :param item: The current index of the item
+        :param c: The current capacity of the baggage
+        :param items: The set of the currently packed items
+        :param solution_set: The set of all the gathered solutions to the knapsack instance
+        :return: The solution set with all the item combinations used
+        """
+        if item == 0 or c == 0:
+            if solution[item][c] != 0:
+                # When we need to pack in the first item
+                items |= frozenset({item + 1})
+            return solution_set | {items}
+        if solution[item][c] - profits[item] == solution[item - 1][c - weights[item]]:
+            # When we pack the item
+            solution_set |= _get_packed_items_rek(solution, weights, profits, item - 1, c - weights[item],
+                                                  items | frozenset({item + 1}), solution_set)
+        if solution[item][c] == solution[item - 1][c]:
+            # When we do not pack the item, because the maximal profit would stay the same
+            solution_set |= _get_packed_items_rek(solution, weights, profits, item - 1, c, items, solution_set)
+        return solution_set
+
     number_items: int = len(solution)
     n: int = len(solution[0])
-    return get_packed_items_rek(solution, weights, profits, number_items - 1, n - 1, frozenset(), set())
+    return _get_packed_items_rek(solution, weights, profits, number_items - 1, n - 1, frozenset(), set())
 
 
 def get_profit(solution: FrozenSet[int], profit: List[float]):
