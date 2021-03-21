@@ -26,15 +26,28 @@ def get_solution_matrix_with_indices(solution: List[List[float]]) -> List[Tuple[
 
 def get_packed_items_rek(solution: List[List[float]], weights: List[int], profits: List[float], item: int, c: int,
                          items: FrozenSet[int], solution_set: Set[FrozenSet[int]]) -> Set[FrozenSet[int]]:
+    """
+    Recursive function for calculating the packed items
+    :param solution: The matrix of the solved knapsack instance
+    :param weights: The list of the weight of the items
+    :param profits: The list of the profit of the items
+    :param item: The index of the item
+    :param c: The current capacity of the baggage
+    :param items: The set of the currently packed items
+    :param solution_set: The set of all the solutions to the knapsack instance
+    :return: The solution set with all the item combinations used
+    """
     if item == 0 or c == 0:
-        if c != 0:
+        if c != 0 and solution[item][c] != 0:
+            # When we need to pack in the first item
             items |= frozenset({item + 1})
         return solution_set | {items}
     if solution[item][c] - profits[item] == solution[item - 1][c - weights[item]]:
+        # When we pack the item
         solution_set |= get_packed_items_rek(solution, weights, profits, item - 1, c - weights[item],
                                              items | frozenset({item + 1}), solution_set)
-
     if solution[item][c] == solution[item - 1][c]:
+        # When we do not pack the item, because the maximal profit would stay the same
         solution_set |= get_packed_items_rek(solution, weights, profits, item - 1, c, items, solution_set)
     return solution_set
 
@@ -55,6 +68,8 @@ def get_weights(solution: FrozenSet[int], weights: List[int]):
 
 w = [1, 4, 1, 3, 2, 5]
 p = [4, 1, 5, 2, 2, 7]
+w = [4,2,6,3,5,1]
+p = [5,4,10,2,9,3]
 b = 10  # data from our example
 solution = solve(w, p, b)
 print("Table from Calculation")
